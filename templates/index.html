@@ -506,6 +506,7 @@ function submitAdData() {
   const revenue = parseFloat(document.getElementById('adRevenue').value) || 0;
 
   if (!date || !pkg || !group || !panel) return showToast('请填写必填字段（日期、包名、投放组、面板）', false);
+  if (spend === 0 && spendClean === 0 && revenue === 0) return showToast('消耗、去空耗、收入至少填写一个', false);
 
   fetch(API_BASE + '/ads', {
     method: 'POST',
@@ -575,6 +576,7 @@ function submitRevenueData() {
   const renewSub = parseFloat(document.getElementById('revRenewSub').value) || 0;
 
   if (!date) return showToast('请填写投放日期', false);
+  if (coin + firstSub + renewSub + coinRenew === 0) return showToast('请至少填写一个收入字段', false);
 
   const total = coin + firstSub + renewSub + coinRenew;
   fetch(API_BASE + '/revenues', {
@@ -1028,7 +1030,20 @@ function renderAdsDashboard() {
   tableHTML += '</tbody></table>';
   document.getElementById('dimTable').innerHTML = tableHTML;
 
-  renderCharts(ads);
+  // 用与下方表格相同的日期范围过滤图表数据
+  let chartAds = ads;
+  if (!dashDateAll) {
+    const start = document.getElementById('dashAdsStart').value;
+    const end = document.getElementById('dashAdsEnd').value;
+    if (start && end) {
+      chartAds = ads.filter(a => a.date >= start && a.date <= end);
+    } else if (start) {
+      chartAds = ads.filter(a => a.date >= start);
+    } else if (end) {
+      chartAds = ads.filter(a => a.date <= end);
+    }
+  }
+  renderCharts(chartAds);
 }
 
 // ===== 收入看板 =====

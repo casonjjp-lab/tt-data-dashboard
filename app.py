@@ -359,7 +359,24 @@ def import_ad_excel():
                 'spend_clean': float(row.get('消耗去空耗') or row.get('spendClean') or 0),
                 'revenue': float(row.get('收入投放口径') or row.get('revenue') or 0)
             })
-        res = supabase.table('ads').insert(payload).execute()
+        
+        # 覆盖逻辑：按 (date, pkg, group, panel) 去重，后上传的覆盖先上传的
+        seen = {}
+        for row in payload:
+            key = (row['date'], row['pkg'], row['group'], row['panel'])
+            seen[key] = row
+        
+        # 删除数据库中已存在的相同维度数据
+        for row in seen.values():
+            (supabase.table('ads').delete()
+                .eq('date', row['date'])
+                .eq('pkg', row['pkg'])
+                .eq('group', row['group'])
+                .eq('panel', row['panel'])
+                .execute())
+        
+        # 插入新数据
+        res = supabase.table('ads').insert(list(seen.values())).execute()
         return jsonify({'success': True, 'count': len(res.data)})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -389,7 +406,22 @@ def import_revenue_excel():
                 'coin_renew': coin_renew,
                 'total': coin + first_sub + renew_sub + coin_renew
             })
-        res = supabase.table('revenues').insert(payload).execute()
+        
+        # 覆盖逻辑：按 (date, install_days) 去重，后上传的覆盖先上传的
+        seen = {}
+        for row in payload:
+            key = (row['date'], row['install_days'])
+            seen[key] = row
+        
+        # 删除数据库中已存在的相同维度数据
+        for row in seen.values():
+            (supabase.table('revenues').delete()
+                .eq('date', row['date'])
+                .eq('install_days', row['install_days'])
+                .execute())
+        
+        # 插入新数据
+        res = supabase.table('revenues').insert(list(seen.values())).execute()
         return jsonify({'success': True, 'count': len(res.data)})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
