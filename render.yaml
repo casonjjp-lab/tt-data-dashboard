@@ -7,11 +7,9 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
-      - key: DATABASE_URL
-        value: sqlite:////opt/render/project/src/data/tt_data.db
+      - key: SUPABASE_URL
+        value: https://tbxxhmtqufzzhshivija.supabase.co
+      - key: SUPABASE_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRieHhobXRxdWZ6emhzaGl2aWphIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MjcxMDY1MCwiZXhwIjoyMDk4Mjg2NjUwfQ.uYnFvitNn_CrqXCvXu0xGLEF994uxMrUeINYwjPf8Eg
       - key: PYTHON_VERSION
         value: 3.11.0
-    disk:
-      name: sqlite-data
-      mountPath: /opt/render/project/src/data
-      sizeGB: 1
